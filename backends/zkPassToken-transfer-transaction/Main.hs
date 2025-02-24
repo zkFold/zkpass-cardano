@@ -4,7 +4,8 @@ import           Cardano.Api        (SerialiseAsRawBytes (..), parsePolicyId)
 import           Cardano.Api.Ledger (toCBOR)
 import           Codec.CBOR.Write   (toStrictByteString)
 import           Data.ByteString    as BS (writeFile)
-import           Prelude            (Either (..), IO, Show (..), head, print, ($), (++), (.), (<$>))
+import           Prelude            (Either (..), IO, Show (..), head, print,
+                                     ($), (++), (.), (<$>))
 import           System.Environment (getArgs)
 import           Text.Parsec        (parse)
 

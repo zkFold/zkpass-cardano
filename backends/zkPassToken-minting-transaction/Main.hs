@@ -1,15 +1,18 @@
 module Main where
 
-import           Cardano.Api                           (AssetName (..), UsingRawBytesHex (..))
+import           Cardano.Api                           (AssetName (..),
+                                                        UsingRawBytesHex (..))
 import           Data.Aeson                            (decode)
 import           Data.ByteString                       as BS (writeFile)
 import qualified Data.ByteString.Lazy                  as BL
 import           Data.Maybe                            (fromJust)
 import           Data.String                           (IsString (..))
 import           PlutusLedgerApi.V3                    (fromBuiltin)
-import           Prelude                               (IO, putStr, show, ($), (++), (.), (<$>))
+import           Prelude                               (IO, putStr, show, ($),
+                                                        (++), (.), (<$>))
 
-import           ZkFold.Cardano.Examples.EqualityCheck (EqualityCheckContract (..), equalityCheckVerificationBytes)
+import           ZkFold.Cardano.Examples.EqualityCheck (EqualityCheckContract (..),
+                                                        equalityCheckVerificationBytes)
 import           ZkFold.Cardano.OffChain.Utils         (dataToCBOR)
 import qualified ZkFold.Cardano.OnChain.BLS12_381.F    as F
 import           ZkFold.Cardano.OnChain.Plonkup.Data   (ProofBytes (..))

@@ -10,17 +10,26 @@
 module ZkPass.Cardano.UPLC.ZkPassToken where
 
 import           PlutusLedgerApi.V3
-import           PlutusTx                                 (CompiledCode, compile, liftCodeDef, unsafeApplyCode)
+import           PlutusTx                                 (CompiledCode,
+                                                           compile, liftCodeDef,
+                                                           unsafeApplyCode)
 import           PlutusTx.AssocMap                        (keys)
 import qualified PlutusTx.Builtins.Internal               as BI
-import           PlutusTx.Prelude                         (Bool (..), BuiltinUnit, Integer, Maybe (..), Ord (..),
-                                                           check, error, isJust, find, ($), (&&), (.), (||))
+import           PlutusTx.Prelude                         (Bool (..),
+                                                           BuiltinUnit, Integer,
+                                                           Maybe (..), Ord (..),
+                                                           check, error, find,
+                                                           isJust, ($), (&&),
+                                                           (.), (||))
 
-import           ZkFold.Base.Protocol.NonInteractiveProof (HaskellCore, NonInteractiveProof (..))
+import           ZkFold.Base.Protocol.NonInteractiveProof (HaskellCore,
+                                                           NonInteractiveProof (..))
 import           ZkFold.Cardano.OnChain.BLS12_381.F       (toInput)
 import           ZkFold.Cardano.OnChain.Plonkup           (PlonkupPlutus)
-import           ZkFold.Cardano.OnChain.Plonkup.Data      (ProofBytes, SetupBytes)
-import           ZkFold.Cardano.OnChain.Utils             (ScriptLabel, eqMintingPurpose)
+import           ZkFold.Cardano.OnChain.Plonkup.Data      (ProofBytes,
+                                                           SetupBytes)
+import           ZkFold.Cardano.OnChain.Utils             (ScriptLabel,
+                                                           eqMintingPurpose)
 
 
 -- | Plutus script (minting policy) for verifying zkpass computations on-chain.
