@@ -1,110 +1,140 @@
 cabal-version:      3.0
+
 name:               zkpass-cardano
 version:            0.1.0.0
--- synopsis:
--- description:
-homepage:           https://zkfold.io/
-license:            GPL-2.0-or-later
+category:           Privacy, Blockchain, Cryptography, Symbolic Computation
 author:             zkFold
 maintainer:         info@zkfold.io
--- copyright:
-category:           Blockchain, Cryptography
+license:            GPL-2.0-or-later
 build-type:         Simple
-extra-doc-files:    CHANGELOG.md
--- extra-source-files:
 
-common warnings
-    ghc-options: -Wall
+common lang
+  default-language: Haskell2010
+  default-extensions:
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    ImportQualifiedPost
+    LambdaCase
+    NumericUnderscores
+    GeneralizedNewtypeDeriving
+    StandaloneDeriving
+    ViewPatterns
+    AllowAmbiguousTypes
+    FlexibleContexts
+    RankNTypes
+    TypeApplications
+    DataKinds
+    InstanceSigs
+    MultiParamTypeClasses
+    RecordWildCards
+    ScopedTypeVariables
+    FlexibleInstances
+    NoImplicitPrelude
+    TemplateHaskell
+    DeriveAnyClass
+    NamedFieldPuns
+    OverloadedStrings
+  ghc-options:
+    -Wall
+    -Wnoncanonical-monad-instances
+    -Wincomplete-uni-patterns
+    -Wincomplete-record-updates
+    -Wredundant-constraints
+    -Widentities
+    -- -Wunused-packages
+    -Wmissing-deriving-strategies
 
-Flag Pedantic
-    Description: Enable pedantic build with -Werror
-    Manual: True
-    Default: False
-
-common options
-    default-language: Haskell2010
-    ghc-options:
-      -fwarn-redundant-constraints
-      -Wall
-      -Wcompat
-      -Widentities
-      -Wincomplete-record-updates
-      -Wincomplete-uni-patterns
-      -Wnoncanonical-monad-instances
-      -Wpartial-fields
-      -Wredundant-constraints
-      -Wunused-packages
-      -O2
-      -threaded
-    if flag(pedantic)
-      ghc-options:
-        -Werror
-    default-extensions:
-      BangPatterns,
-      BinaryLiterals,
-      ConstraintKinds,
-      DataKinds,
-      DefaultSignatures,
-      DeriveDataTypeable,
-      DeriveFoldable,
-      DeriveFunctor,
-      DeriveGeneric,
-      DeriveTraversable,
-      ExistentialQuantification,
-      FlexibleContexts,
-      FlexibleInstances,
-      FunctionalDependencies,
-      GADTs,
-      GeneralizedNewtypeDeriving,
-      InstanceSigs,
-      KindSignatures,
-      LambdaCase,
-      MultiParamTypeClasses,
-      MultiWayIf,
-      NamedFieldPuns,
-      NoImplicitPrelude,
-      NoStarIsType,
-      NumericUnderscores,
-      OverloadedStrings,
-      OverloadedLabels,
-      PolyKinds,
-      RankNTypes,
-      RecordWildCards,
-      ScopedTypeVariables,
-      StandaloneDeriving,
-      StandaloneKindSignatures,
-      TupleSections,
-      TypeApplications,
-      TypeFamilies,
-      ViewPatterns
-
-common options-exe
-    import: options
-    ghc-options:
-      -rtsopts
-    ghc-prof-options:
-      -with-rtsopts=-pj
+common lang-extra
+  ghc-options:
+    -fobject-code
+    -fno-specialise
+    -fno-spec-constr
+    -fno-ignore-interface-pragmas
+    -fno-omit-interface-pragmas
+    -fno-strictness
+    -fno-unbox-strict-fields 
+    -fno-unbox-small-strict-fields
+    -fno-full-laziness
+    -fexpose-all-unfoldings
+    -- Comment the following line to enable PlutusTx error messages
+    -- By default, we defer the errors as they mess with the HLS
+    -fplugin-opt PlutusTx.Plugin:defer-errors
 
 library
-    import:           warnings
-    exposed-modules:  MyLib
-    -- other-modules:
-    -- other-extensions:
-    build-depends:    base ^>=4.18.2.1
-    hs-source-dirs:   src
-    default-language: Haskell2010
-    build-depends:
-      symbolic-base    ,
-      symbolic-cardano 
+  import:           lang
+  import:           lang-extra
+  default-language: Haskell2010
+  exposed-modules:
+    ZkPass.Cardano.UPLC.ZkPassToken
+  hs-source-dirs:   src
+  build-depends:
+    base                >=4.9 && <5,
+    plutus-core             ^>=1.36,
+    plutus-ledger-api       ^>=1.36,
+    plutus-tx               ^>=1.36,
+    plutus-tx-plugin        ^>=1.36,
+    symbolic-base                  ,
+    symbolic-cardano               ,
+    zkfold-cardano                 ,
 
-executable zkpass-cardano
-    import:           warnings
-    main-is:          Main.hs
-    -- other-modules:
-    -- other-extensions:
-    build-depends:
-        base ^>=4.18.2.1,
-        zkpass-cardano
+executable zkPassToken-init-transaction
+  import:           lang
+  import:           lang-extra
+  default-language: Haskell2010
+  ghc-options:      -rtsopts
+  main-is:          Main.hs
+  hs-source-dirs:   backends/zkPassToken-init-transaction
+  build-depends:
+    aeson                          ,
+    base              >= 4.9 && < 5,
+    bytestring                     ,
+    directory                      ,
+    zkfold-cardano                 ,
+    zkfold-example                 ,
+    zkpass-cardano                 ,
+    QuickCheck                     ,
 
-    hs-source-dirs:   app
-    default-language: Haskell2010
+executable zkPassToken-transfer-transaction
+  import:           lang
+  import:           lang-extra
+  default-language: Haskell2010
+  ghc-options:      -rtsopts
+  main-is:          Main.hs
+  hs-source-dirs:   backends/zkPassToken-transfer-transaction
+  build-depends:
+    base              >= 4.9 && < 5,
+    bytestring                     ,
+    cardano-api                    ,
+    cborg                          ,
+    parsec                         ,
+
+executable zkPassToken-minting-transaction
+  import:           lang
+  import:           lang-extra
+  default-language: Haskell2010
+  ghc-options:      -rtsopts
+  main-is:          Main.hs
+  hs-source-dirs:   backends/zkPassToken-minting-transaction
+  build-depends:
+    aeson                          ,
+    base              >= 4.9 && < 5,
+    bytestring                     ,
+    cardano-api                    ,
+    plutus-ledger-api       ^>=1.36,
+    zkfold-cardano                 ,
+    zkfold-example                 ,
+
+
+-- common warnings
+--     ghc-options: -Wall
+
+
+-- Flag Pedantic
+--     Description: Enable pedantic build with -Werror
+--     Manual: True
+--     Default: False
