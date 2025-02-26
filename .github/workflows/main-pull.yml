@@ -108,7 +108,7 @@ jobs:
     - name: Configure Cabal
       run: |
         cabal update
-        cabal configure --enable-tests --enable-benchmarks --enable-documentation
+        # cabal configure --enable-tests --enable-benchmarks --enable-documentation
 
     - name: Generate cache key
       # Creates plan.json file
