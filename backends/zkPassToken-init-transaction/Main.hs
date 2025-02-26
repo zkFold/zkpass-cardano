@@ -2,38 +2,38 @@ module Main where
 
 import           Data.Aeson                            (encode)
 import qualified Data.ByteString.Lazy                  as BL
-import           Prelude                               (Bool (..), IO,
-                                                        Show (..), putStr, ($),
-                                                        (++))
+import           Prelude                               (Bool (..), IO, Show (..), putStr, ($), (++))
 import           System.Directory                      (createDirectoryIfMissing)
+import           System.FilePath                       ((</>))
+import qualified System.IO                             as IO
+import           System.Random                         (randomRIO)
 import           Test.QuickCheck.Arbitrary             (Arbitrary (..))
 import           Test.QuickCheck.Gen                   (generate)
 
-import           ZkFold.Cardano.Examples.EqualityCheck (EqualityCheckContract (..),
-                                                        equalityCheckVerificationBytes)
-import           ZkFold.Cardano.OffChain.Utils         (savePlutus)
--- import           ZkFold.Cardano.UPLC.ForwardingScripts    (forwardingMintCompiled)
-import           ZkPass.Cardano.UPLC.ZkPassToken       (forwardingMintCompiled,
-                                                        zkPassTokenCompiled)
+import           ZkFold.Cardano.OffChain.Utils          (savePlutus)
+import           ZkPass.Cardano.Example.IdentityCircuit (IdentityCircuitContract (..), identityCircuitVerificationBytes)
+import           ZkPass.Cardano.UPLC.ZkPassToken        (forwardingMintCompiled, zkPassTokenCompiled)
 
 main :: IO ()
 main = do
-  x           <- generate arbitrary
-  ps          <- generate arbitrary
-  targetValue <- generate arbitrary
+  let path = "."
+  
+  x  <- generate arbitrary
+  ps <- generate arbitrary
 
-  let contract = EqualityCheckContract x ps targetValue
+  let contract = IdentityCircuitContract x ps
 
   createDirectoryIfMissing True "../test-data"
   createDirectoryIfMissing True "../assets"
 
-  BL.writeFile "../test-data/plonkup-raw-contract-data.json" $ encode contract
+  BL.writeFile (path </> "test-data" </> "plonkup-raw-contract-data.json") $ encode contract
 
-  putStr $ "x: " ++ show x ++ "\n" ++ "ps: " ++ show ps ++ "\n" ++ "targetValue: " ++ show targetValue ++ "\n"
+  putStr $ "x: " ++ show x ++ "\n" ++ "ps: " ++ show ps ++ "\n"
 
-  let (setup, _, _) = equalityCheckVerificationBytes x ps targetValue
+  let (setup, _, _) = identityCircuitVerificationBytes x ps
 
-  let fmLabel = 0  -- Use a different label (number) to get another 'forwardingMint' address
+  fmTag <- randomRIO (1, 10000)
 
-  savePlutus "../assets/zkPassToken.plutus" $ zkPassTokenCompiled setup
-  savePlutus "../assets/forwardingMint.plutus" $ forwardingMintCompiled fmLabel
+  savePlutus (path </> "assets" </> "zkPassToken.plutus") $ zkPassTokenCompiled setup
+  savePlutus (path </> "assets" </> "forwardingMint.plutus") $ forwardingMintCompiled fmTag
+  IO.writeFile (path </> "assets" </> "parkingTag.txt") $ show fmTag

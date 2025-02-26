@@ -13,7 +13,6 @@ index-state:
   , hackage.haskell.org 2025-01-13T01:23:22Z
   , cardano-haskell-packages 2025-01-08T16:35:32Z
 
--- old tag: 81a74ccc4e586924e68a098dd66d62e60aa63b41
 source-repository-package
   type: git
   location: https://github.com/zkFold/symbolic.git
@@ -31,12 +30,6 @@ source-repository-package
   location: https://github.com/zkFold/zkfold-cardano.git
   tag: aff430f103cb3a674fadfd48ed8ea962482ce236
   subdir: zkfold-cardano
-
-source-repository-package
-  type: git
-  location: https://github.com/zkFold/zkfold-cardano.git
-  tag: aff430f103cb3a674fadfd48ed8ea962482ce236
-  subdir: zkfold-example
 
 package cardano-crypto-praos
   flags: -external-libsodium-vrf
