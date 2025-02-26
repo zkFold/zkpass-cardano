@@ -1,0 +1,121 @@
+cabal-version:      3.0
+
+name:               zkpass-cardano
+version:            0.1.0.0
+category:           Privacy, Blockchain, Cryptography, Symbolic Computation
+author:             zkFold
+maintainer:         info@zkfold.io
+license:            GPL-2.0-or-later
+build-type:         Simple
+
+common lang
+  default-language: Haskell2010
+  default-extensions:
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    ImportQualifiedPost
+    LambdaCase
+    NumericUnderscores
+    GeneralizedNewtypeDeriving
+    StandaloneDeriving
+    ViewPatterns
+    AllowAmbiguousTypes
+    FlexibleContexts
+    RankNTypes
+    TypeApplications
+    DataKinds
+    InstanceSigs
+    MultiParamTypeClasses
+    RecordWildCards
+    ScopedTypeVariables
+    FlexibleInstances
+    NoImplicitPrelude
+    TemplateHaskell
+    DeriveAnyClass
+    NamedFieldPuns
+    OverloadedStrings
+  ghc-options:
+    -Wall
+    -Wnoncanonical-monad-instances
+    -Wincomplete-uni-patterns
+    -Wincomplete-record-updates
+    -Wredundant-constraints
+    -Widentities
+    -- -Wunused-packages
+    -Wmissing-deriving-strategies
+
+common lang-extra
+  ghc-options:
+    -fobject-code
+    -fno-specialise
+    -fno-spec-constr
+    -fno-ignore-interface-pragmas
+    -fno-omit-interface-pragmas
+    -fno-strictness
+    -fno-unbox-strict-fields 
+    -fno-unbox-small-strict-fields
+    -fno-full-laziness
+    -fexpose-all-unfoldings
+    -- Comment the following line to enable PlutusTx error messages
+    -- By default, we defer the errors as they mess with the HLS
+    -fplugin-opt PlutusTx.Plugin:defer-errors
+
+library
+  import:           lang
+  import:           lang-extra
+  default-language: Haskell2010
+  exposed-modules:
+    ZkPass.Cardano.Example.IdentityCircuit,
+    ZkPass.Cardano.UPLC.ZkPassToken
+  hs-source-dirs:   src
+  build-depends:
+    aeson                          ,
+    base                >=4.9 && <5,
+    plutus-core             ^>=1.36,
+    plutus-ledger-api       ^>=1.36,
+    plutus-tx               ^>=1.36,
+    plutus-tx-plugin        ^>=1.36,
+    symbolic-base                  ,
+    symbolic-cardano               ,
+    zkfold-cardano                 ,
+
+executable zkPassToken-init-transaction
+  import:           lang
+  import:           lang-extra
+  default-language: Haskell2010
+  ghc-options:      -rtsopts
+  main-is:          Main.hs
+  hs-source-dirs:   backends/zkPassToken-init-transaction
+  build-depends:
+    aeson                          ,
+    base              >= 4.9 && < 5,
+    bytestring                     ,
+    directory                      ,
+    filepath                       ,
+    random                         ,
+    zkfold-cardano                 ,
+    zkpass-cardano                 ,
+    QuickCheck                     ,
+
+executable zkPassToken-minting-transaction
+  import:           lang
+  import:           lang-extra
+  default-language: Haskell2010
+  ghc-options:      -rtsopts
+  main-is:          Main.hs
+  hs-source-dirs:   backends/zkPassToken-minting-transaction
+  build-depends:
+    aeson                          ,
+    base              >= 4.9 && < 5,
+    bytestring                     ,
+    cardano-api                    ,
+    filepath                       ,
+    plutus-ledger-api       ^>=1.36,
+    random                         ,
+    zkfold-cardano                 ,
+    zkpass-cardano
