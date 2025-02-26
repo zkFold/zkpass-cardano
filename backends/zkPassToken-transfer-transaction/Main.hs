@@ -13,7 +13,7 @@ import           Text.Parsec        (parse)
 main :: IO ()
 main = do
   let path = "."
-  
+
   policyidE <- parse parsePolicyId "" . head <$> getArgs
 
   case policyidE of

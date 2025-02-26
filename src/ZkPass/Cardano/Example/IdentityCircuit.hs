@@ -1,24 +1,35 @@
-{-# LANGUAGE TypeOperators      #-}
+{-# LANGUAGE TypeOperators #-}
 
 module ZkPass.Cardano.Example.IdentityCircuit where
 
 import           Data.Aeson                                  (FromJSON, ToJSON)
-import           GHC.Generics                                (Generic, Par1 (..), U1 (..), type (:*:) (..))
-import           Prelude                                     hiding (Bool, Eq (..), Fractional (..), Num (..), length)
+import           GHC.Generics                                (Generic,
+                                                              Par1 (..),
+                                                              U1 (..),
+                                                              type (:*:) (..))
+import           Prelude                                     hiding (Bool,
+                                                              Eq (..),
+                                                              Fractional (..),
+                                                              Num (..), length)
 
 import           ZkFold.Base.Algebra.Basic.Class             (zero)
 import           ZkFold.Base.Algebra.Basic.Field             (toZp)
 import           ZkFold.Base.Algebra.EllipticCurve.BLS12_381 (BLS12_381_G1, Fr)
-import           ZkFold.Base.Protocol.NonInteractiveProof    (HaskellCore, NonInteractiveProof (..))
+import           ZkFold.Base.Protocol.NonInteractiveProof    (HaskellCore,
+                                                              NonInteractiveProof (..))
 import           ZkFold.Base.Protocol.Plonkup                (Plonkup (..))
 import           ZkFold.Base.Protocol.Plonkup.Prover.Secret  (PlonkupProverSecret)
 import           ZkFold.Base.Protocol.Plonkup.Utils          (getParams)
 import           ZkFold.Base.Protocol.Plonkup.Witness        (PlonkupWitnessInput (..))
-import           ZkFold.Cardano.OffChain.Plonkup             (PlonkupN, mkInput, mkProof, mkSetup)
+import           ZkFold.Cardano.OffChain.Plonkup             (PlonkupN, mkInput,
+                                                              mkProof, mkSetup)
 import           ZkFold.Cardano.OnChain.BLS12_381.F          (F (..))
 import           ZkFold.Cardano.OnChain.Plonkup              ()
-import           ZkFold.Cardano.OnChain.Plonkup.Data         (InputBytes, ProofBytes, SetupBytes)
-import           ZkFold.Symbolic.Compiler                    (ArithmeticCircuit (..), eval, idCircuit)
+import           ZkFold.Cardano.OnChain.Plonkup.Data         (InputBytes,
+                                                              ProofBytes,
+                                                              SetupBytes)
+import           ZkFold.Symbolic.Compiler                    (ArithmeticCircuit (..),
+                                                              eval, idCircuit)
 
 
 data IdentityCircuitContract = IdentityCircuitContract
