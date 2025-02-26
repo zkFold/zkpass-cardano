@@ -5,7 +5,7 @@ import qualified Data.ByteString                        as BS
 import qualified Data.ByteString.Lazy                   as BL
 import           Prelude                                (Bool (..), IO,
                                                          Show (..), putStr, ($),
-                                                         (.), (++))
+                                                         (++), (.))
 import           System.Directory                       (createDirectoryIfMissing)
 import           System.FilePath                        ((</>))
 import qualified System.IO                              as IO
@@ -13,7 +13,8 @@ import           System.Random                          (randomRIO)
 import           Test.QuickCheck.Arbitrary              (Arbitrary (..))
 import           Test.QuickCheck.Gen                    (generate)
 
-import           ZkFold.Cardano.OffChain.Utils          (currencySymbolOf, dataToCBOR, savePlutus)
+import           ZkFold.Cardano.OffChain.Utils          (currencySymbolOf,
+                                                         dataToCBOR, savePlutus)
 import           ZkPass.Cardano.Example.IdentityCircuit (IdentityCircuitContract (..),
                                                          identityCircuitVerificationBytes)
 import           ZkPass.Cardano.UPLC.ZkPassToken        (forwardingMintCompiled,
