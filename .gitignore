@@ -1,2 +1,4 @@
 dist-*
 *~
+assets
+test-data

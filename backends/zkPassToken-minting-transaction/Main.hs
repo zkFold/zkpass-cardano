@@ -32,7 +32,7 @@ main = do
 
   zkpr <- zkPassResultInput
 
-  IdentityCircuitContract{..} <- fromJust . decode <$> BL.readFile "../test-data/plonkup-raw-contract-data.json"
+  IdentityCircuitContract{..} <- fromJust . decode <$> BL.readFile (path </> "test-data" </> "plonkup-raw-contract-data.json")
 
   putStr $ "x: " ++ show x ++ "\n" ++ "ps: " ++ show ps ++ "\n"
 
