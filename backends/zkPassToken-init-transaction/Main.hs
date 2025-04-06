@@ -24,19 +24,19 @@ main :: IO ()
 main = do
   let path = "."
 
-  x  <- generate arbitrary
-  ps <- generate arbitrary
+  x'  <- generate arbitrary
+  ps' <- generate arbitrary
 
-  let contract = IdentityCircuitContract x ps
+  let contract = IdentityCircuitContract x' ps'
 
   createDirectoryIfMissing True $ path </> "test-data"
   createDirectoryIfMissing True $ path </> "assets"
 
   BL.writeFile (path </> "test-data" </> "plonkup-raw-contract-data.json") $ encode contract
 
-  putStr $ "x: " ++ show x ++ "\n" ++ "ps: " ++ show ps ++ "\n"
+  putStr $ "x: " ++ show x' ++ "\n" ++ "ps: " ++ show ps' ++ "\n"
 
-  let (setup, _, _) = identityCircuitVerificationBytes x ps
+  let (setup, _, _) = identityCircuitVerificationBytes x' ps'
 
   fmTag <- randomRIO (1, 10000)
 

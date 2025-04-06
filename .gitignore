@@ -2,3 +2,4 @@ dist-*
 *~
 assets
 test-data
+maestro-config.json
