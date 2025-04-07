@@ -20,7 +20,7 @@ import           ZkFold.Cardano.OnChain.Plonkup.Data    (InputBytes)
 import           ZkFold.Cardano.OnChain.Utils           (dataToBlake)
 import           ZkPass.Cardano.Example.IdentityCircuit (IdentityCircuitContract (..),
                                                          zkPassResultVerificationBytes)
-
+import           ZkPass.Cardano.Example.ZkPassResult    (zkPassResult)
 
 -- | Sample input from ZKPass result.
 zkPassResultInput :: IO InputBytes
@@ -30,13 +30,13 @@ main :: IO ()
 main = do
   let path = "."
 
-  zkpr <- zkPassResultInput
+  zkpr <- zkPassResult
 
   IdentityCircuitContract{..} <- fromJust . decode <$> BL.readFile (path </> "test-data" </> "plonkup-raw-contract-data.json")
 
   putStr $ "x: " ++ show x ++ "\n" ++ "ps: " ++ show ps ++ "\n"
 
-  let (_, input, proof) = zkPassResultVerificationBytes x ps zkpr
+  let (_, input, proof) = zkPassResultVerificationBytes x ps $ F.toInput zkpr
 
   BS.writeFile (path </> "assets" </> "tokenname") $ fromString $ show $ UsingRawBytesHex $ AssetName $ fromBuiltin $ F.fromInput input
   BS.writeFile (path </> "assets" </> "unit.cbor") $ dataToCBOR ()

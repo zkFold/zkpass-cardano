@@ -74,6 +74,7 @@ library
   default-language: Haskell2010
   exposed-modules:
     ZkPass.Cardano.Example.IdentityCircuit,
+    ZkPass.Cardano.Example.ZkPassResult,
     ZkPass.Cardano.UPLC.ZkPassToken
   hs-source-dirs:   src
   build-depends:
@@ -83,6 +84,7 @@ library
     plutus-ledger-api       ^>=1.36,
     plutus-tx               ^>=1.36,
     plutus-tx-plugin        ^>=1.36,
+    random                         ,
     symbolic-base                  ,
     symbolic-cardano               ,
     zkfold-cardano                 ,
@@ -136,8 +138,10 @@ executable zkpass-server
       atlas-cardano                      ,
       base                  >= 4.9 && < 5,
       cardano-api                        ,
+      containers                         ,
       http-types                         ,
       parsec                             ,
+      plutus-ledger-api                  ,
       servant                            ,
       servant-server                     ,
       transformers                       ,
