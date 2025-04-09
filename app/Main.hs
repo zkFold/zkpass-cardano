@@ -12,6 +12,7 @@ import           Control.Exception           (throwIO, try)
 import           Control.Monad               (void)
 import           Control.Monad.Trans.Except  (ExceptT(..))
 import           Data.Aeson
+import qualified Data.ByteString.Lazy        as BL
 import           Data.Coerce                 (coerce)
 import qualified Data.Map.Strict             as Map
 import           Data.String                 (fromString)
@@ -27,7 +28,10 @@ import           Network.Wai.Middleware.Cors
 import           PlutusLedgerApi.V3          (fromBuiltin, toBuiltinData)
 import           Prelude
 import           Servant
+import           System.Directory            (createDirectoryIfMissing)
 import           System.Environment          (getArgs)
+import           System.FilePath             ((</>))
+import           System.IO                   (withFile, IOMode(AppendMode))
 import           Test.QuickCheck.Arbitrary   (Arbitrary (..))
 import           Test.QuickCheck.Gen         (generate)
 import           Text.Parsec                 (parse)
@@ -51,7 +55,8 @@ data Ctx = Ctx
 data SetupParams = SetupParams
   { spX  :: !Fr
   , spPS :: !(PlonkupProverSecret BLS12_381_G1)
-  }
+  } deriving stock (Show, Generic)
+    deriving anyclass (ToJSON, FromJSON)
 
 ------------------------- :Setup: -------------------------
 
@@ -77,12 +82,6 @@ data SetupResponse = SetupResponse
   , srUnsigned :: !UnsignedTxResponse
   } deriving stock (Show, Generic)
     deriving anyclass ToJSON
-
--- | Derive GYAddress
-fromAddrHex :: String -> GYAddress
-fromAddrHex addrHex = case parse parseAddressAny "" addrHex of
-  Right addr -> addressFromApi addr
-  Left err   -> error $ show err
 
 -- | Construct setup response.
 setupResponse :: Ctx -> SetupParams -> InputParams -> IO SetupResponse
@@ -162,7 +161,8 @@ data MintInput = MintInput
 -- | ZkPass response parameters.
 data ZkPassResponse = ZkPassResponse
   { zkprResult   :: !String
-  , zkprToken    :: !String
+  , zkprPolicyId :: !String
+  , zkprTknName  :: !String
   , zkprUnsigned :: !UnsignedTxResponse
   } deriving stock (Show, Generic)
     deriving anyclass ToJSON
@@ -196,7 +196,10 @@ handleMint Ctx{..} SetupParams{..} MintInput{..} = do
                                       Nothing
                                       (buildTxBody skeleton)
 
-      return $ ZkPassResponse (byteStringAsHex $ fromBuiltin zkpr) (show zkPassToken) (unSignedTxWithFee txBody)
+      return $ ZkPassResponse (byteStringAsHex $ fromBuiltin zkpr)
+                              (fst $ asTuple zkPassToken)
+                              (snd $ asTuple zkPassToken)
+                              (unSignedTxWithFee txBody)
 
     Left err      -> throwIO . userError . show $ err
 
@@ -212,13 +215,7 @@ data BurnInput = BurnInput
   } deriving stock (Show, Generic)
     deriving anyclass FromJSON
 
--- | Burning response parameters.
-data BurnResponse = BurnResponse
-  { brTxId :: !String
-  } deriving stock (Show, Generic)
-    deriving anyclass ToJSON
-
-handleBurn :: Ctx -> SetupParams -> BurnInput -> IO BurnResponse
+handleBurn :: Ctx -> SetupParams -> BurnInput -> IO UnsignedTxResponse
 handleBurn Ctx{..} SetupParams{..} BurnInput{..} = do
   let nid       = cfgNetworkId ctxCoreCfg
       providers = ctxProviders
@@ -233,14 +230,14 @@ handleBurn Ctx{..} SetupParams{..} BurnInput{..} = do
       let cs          = mintingPolicyIdToCurrencySymbol zkpPolicy
           inlineDatum = GYOutDatumInline $ datumFromPlutusData cs
 
-      utxos <- runGYTxQueryMonadIO nid
-                                   providers
-                                   (utxosAtAddress forwardingMintAddr (Just GYLovelace))
+      utxosAtFM <- runGYTxQueryMonadIO nid
+                                       providers
+                                       (utxosAtAddress forwardingMintAddr (Just GYLovelace))
 
-      let utxosList = utxosToList $ filterUTxOs (\u -> utxoOutDatum u == inlineDatum) utxos
+      let utxosAtFMList = utxosToList $ filterUTxOs (\u -> utxoOutDatum u == inlineDatum) utxosAtFM
 
-      case utxosList of
-        [utxo] -> do
+      case utxosAtFMList of
+        [utxoAtFM] -> do
           let (setup, _, _)        = identityCircuitVerificationBytes spX spPS
               zkPassTokenValidator = validatorFromPlutus @PlutusV3 $ zkPassTokenCompiled setup
 
@@ -254,27 +251,20 @@ handleBurn Ctx{..} SetupParams{..} BurnInput{..} = do
           let dummyRedeemer' = ProofBytes "" "" "" "" "" "" "" "" "" "" "" "" "" 0 0 0 0 0 0 0 0 0 0 0 0 (F.F 0)
               dummyRedeemer  = redeemerFromPlutusData $ toBuiltinData dummyRedeemer'
 
-          let skeleton = mustHaveInput (GYTxIn @PlutusV3 (utxoRef utxo) forwardWit)
-                         <> mustHaveInput (GYTxIn (fromString "a2c87eebbec6502089b0d0c73b8952ec8309c993feee1649f79483216270a9c0#0") GYTxInWitnessKey)  -- Example
+          let skeleton = mustHaveInput (GYTxIn @PlutusV3 (utxoRef utxoAtFM) forwardWit)
                          <> mustMint (GYBuildPlutusScript setupRef) dummyRedeemer zkpTokenName (-1)
-
-          -- Example: with signing-key file
-          let skeyFile = "../hello-servant/tests/keys/bob.skey"
-          skey <- readSigningKey @'GYKeyRolePayment skeyFile
 
           txBody <- runGYTxBuilderMonadIO nid
                                           providers
-                                          [unsafeAddressFromText $ T.pack "addr_test1vrl6grwjvrtemdchnpnuma6znc64q43a5vdlarvcec4664czwjjzj"]
-                                          (unsafeAddressFromText $ T.pack "addr_test1vrl6grwjvrtemdchnpnuma6znc64q43a5vdlarvcec4664czwjjzj")
+                                          biUsedAddrs
+                                          biChangeAddr
                                           Nothing
                                           $ do
             ownAddrs <- ownAddresses
-            let skeleton' = skeleton <> mustHaveOutput (GYTxOut (head ownAddrs) (utxoValue utxo) Nothing Nothing)
+            let skeleton' = skeleton <> mustHaveOutput (GYTxOut (head ownAddrs) (utxoValue utxoAtFM) Nothing Nothing)
             buildTxBody skeleton'
 
-          tid <- gySubmitTx providers $ signGYTxBody txBody [skey]
-
-          return $ BurnResponse (show tid)
+          return $ unSignedTxWithFee txBody
 
         _ -> throwIO $ userError "No UTxO with expected datum found."
     _ -> throwIO $ userError "Missing native token specification."
@@ -334,6 +324,22 @@ data TransferInput = TransferInput
   } deriving stock (Show, Generic)
     deriving anyclass FromJSON
 
+------------------------- :own address: -------------------------
+
+-- | Own addresses input.
+data OwnAddresses = OwnAddresses { oaUsedAddrs :: ![GYAddress] }
+  deriving stock (Show, Generic)
+  deriving anyclass FromJSON
+
+-- | Return own address as text.
+data OwnAddress = OwnAddress { oaOwnAddress :: !T.Text }
+  deriving stock (Show, Generic)
+  deriving anyclass ToJSON
+
+-- | Handle to get own address.
+handleOwnAddr :: OwnAddresses -> IO OwnAddress
+handleOwnAddr OwnAddresses{..} = pure . OwnAddress . addressToText $ head oaUsedAddrs
+
 ------------------------- :Server: -------------------------
 
 -- | Type for our Servant API.
@@ -344,9 +350,11 @@ type API = "setup" :> ReqBody '[JSON] InputParams
       :<|> "mint" :> ReqBody '[JSON] MintInput
                   :> Post    '[JSON] ZkPassResponse
       :<|> "burn" :> ReqBody '[JSON] BurnInput
-                  :> Post    '[JSON] BurnResponse
+                  :> Post    '[JSON] UnsignedTxResponse
       :<|> "add-wit-and-submit" :> ReqBody '[JSON] AddWitAndSubmitParams
                                 :> Post    '[JSON] SubmitTxResponse
+      :<|> "own-addr" :> ReqBody '[JSON] OwnAddresses
+                      :> Post    '[JSON] OwnAddress
 
 -- | Server Handler
 server :: Ctx -> SetupParams -> ServerT API IO
@@ -355,6 +363,7 @@ server ctx sp = handleSetup ctx sp
            :<|> handleMint ctx sp
            :<|> handleBurn ctx sp
            :<|> handleAddWitAndSubmitTx ctx
+           :<|> handleOwnAddr
 
 appApi :: Proxy API
 appApi = Proxy
@@ -382,9 +391,35 @@ main = do
   ps <- generate arbitrary
   let setupParams = SetupParams x ps
 
+  createDirectoryIfMissing True "./log"
+  withFile ("log" </> "plonkup-raw-contract-data.json") AppendMode $ \h -> BL.hPut h (encode setupParams)
+
   putStrLn "Loading Providers ..."
   withCfgProviders coreCfg "api-server" $ \providers -> do
     let port = 8080
         ctx  = Ctx coreCfg providers
     putStrLn $ "Serving on http://localhost:" ++ show port
     run port $ app ctx setupParams
+
+
+
+------------------------- :Helper functions: -------------------------
+
+-- | GYToken as a tuple of strings.
+asTuple :: GYAssetClass -> (String, String)
+asTuple GYLovelace    = ("", "Lovelace")
+asTuple (GYToken p t) = (trim $ show p, trim . show $ tokenNameToHex t)
+  where
+    trim = reverse . drop 1 . reverse . drop 1
+
+trim3 :: String -> String
+trim3 = init3 . drop 3
+  where
+    init3 = reverse . drop 3 . reverse
+
+-- | Derive GYAddress
+fromAddrHex :: String -> GYAddress
+fromAddrHex addrHex = case parse parseAddressAny "" addrHex of
+  Right addr -> addressFromApi addr
+  Left err   -> error $ show err
+
