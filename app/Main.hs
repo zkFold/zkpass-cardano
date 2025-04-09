@@ -412,11 +412,6 @@ asTuple (GYToken p t) = (trim $ show p, trim . show $ tokenNameToHex t)
   where
     trim = reverse . drop 1 . reverse . drop 1
 
-trim3 :: String -> String
-trim3 = init3 . drop 3
-  where
-    init3 = reverse . drop 3 . reverse
-
 -- | Derive GYAddress
 fromAddrHex :: String -> GYAddress
 fromAddrHex addrHex = case parse parseAddressAny "" addrHex of
