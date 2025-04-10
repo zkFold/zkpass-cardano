@@ -1,50 +1,58 @@
 {-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE DeriveAnyClass    #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TypeOperators     #-}
 
 module Main where
 
-import           Cardano.Api                 (AssetName (..), parseAddressAny)
-import           Control.Exception           (throwIO, try)
-import           Control.Monad               (void)
-import           Control.Monad.Trans.Except  (ExceptT(..))
+import           Cardano.Api                                 (AssetName (..),
+                                                              parseAddressAny)
+import           Control.Exception                           (throwIO, try)
+import           Control.Monad                               (void)
+import           Control.Monad.Trans.Except                  (ExceptT (..))
 import           Data.Aeson
-import qualified Data.ByteString.Lazy        as BL
-import           Data.Coerce                 (coerce)
-import qualified Data.Map.Strict             as Map
-import           Data.String                 (fromString)
-import qualified Data.Text                   as T
-import           GeniusYield.GYConfig        (GYCoreConfig (..), coreConfigIO, withCfgProviders)
-import           GeniusYield.Transaction.Common (minimumUTxO)
+import qualified Data.ByteString.Lazy                        as BL
+import           Data.Coerce                                 (coerce)
+import qualified Data.Map.Strict                             as Map
+import           Data.String                                 (fromString)
+import qualified Data.Text                                   as T
+import           GeniusYield.GYConfig                        (GYCoreConfig (..),
+                                                              coreConfigIO,
+                                                              withCfgProviders)
+import           GeniusYield.Transaction.Common              (minimumUTxO)
 import           GeniusYield.TxBuilder
 import           GeniusYield.Types
 import           GHC.Generics
-import qualified Network.HTTP.Types          as HttpTypes
+import qualified Network.HTTP.Types                          as HttpTypes
 import           Network.Wai.Handler.Warp
 import           Network.Wai.Middleware.Cors
-import           PlutusLedgerApi.V3          (fromBuiltin, toBuiltinData)
+import           PlutusLedgerApi.V3                          (fromBuiltin,
+                                                              toBuiltinData)
 import           Prelude
 import           Servant
-import           System.Directory            (createDirectoryIfMissing)
-import           System.Environment          (getArgs)
-import           System.FilePath             ((</>))
-import           System.IO                   (withFile, IOMode(AppendMode))
-import           Test.QuickCheck.Arbitrary   (Arbitrary (..))
-import           Test.QuickCheck.Gen         (generate)
-import           Text.Parsec                 (parse)
+import           System.Directory                            (createDirectoryIfMissing)
+import           System.Environment                          (getArgs)
+import           System.FilePath                             ((</>))
+import           System.IO                                   (IOMode (AppendMode),
+                                                              withFile)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (..))
+import           Test.QuickCheck.Gen                         (generate)
+import           Text.Parsec                                 (parse)
 
 import           ZkFold.Base.Algebra.EllipticCurve.BLS12_381 (BLS12_381_G1, Fr)
 import           ZkFold.Base.Protocol.Plonkup.Prover.Secret  (PlonkupProverSecret)
-import           ZkFold.Cardano.OffChain.Utils               (byteStringAsHex, currencySymbolOf)
+import           ZkFold.Cardano.OffChain.Utils               (byteStringAsHex,
+                                                              currencySymbolOf)
 import qualified ZkFold.Cardano.OnChain.BLS12_381.F          as F
 import           ZkFold.Cardano.OnChain.Plonkup.Data         (ProofBytes (..))
-import           ZkPass.Cardano.Example.IdentityCircuit      (identityCircuitVerificationBytes, zkPassResultVerificationBytes)
+import           ZkPass.Cardano.Example.IdentityCircuit      (identityCircuitVerificationBytes,
+                                                              zkPassResultVerificationBytes)
 import           ZkPass.Cardano.Example.ZkPassResult         (zkPassResult)
-import           ZkPass.Cardano.UPLC.ZkPassToken             (forwardingMintCompiled, zkPassTokenCompiled)
-                 
+import           ZkPass.Cardano.UPLC.ZkPassToken             (forwardingMintCompiled,
+                                                              zkPassTokenCompiled)
+
 -- | Configuration context.
 data Ctx = Ctx
   { ctxCoreCfg   :: !GYCoreConfig
