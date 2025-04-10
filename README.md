@@ -16,4 +16,4 @@ The zkPass server on this repository was written using the [Atlas](https://atlas
 
 ## zkPass client
 
-The zkPass client cant be found [here](https://github.com/zkFold/zkpass-client).
+The zkPass client can be found [here](https://github.com/zkFold/zkpass-client).
