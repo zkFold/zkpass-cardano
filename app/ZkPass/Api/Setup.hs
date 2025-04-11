@@ -7,10 +7,10 @@ import           GeniusYield.Types
 import           GHC.Generics
 import           Prelude
 import           ZkFold.Cardano.OffChain.Utils          (currencySymbolOf)
+import           ZkPass.Api.Context
 import           ZkPass.Cardano.Example.IdentityCircuit (identityCircuitVerificationBytes)
 import           ZkPass.Cardano.UPLC.ZkPassToken        (forwardingMintCompiled,
                                                          zkPassTokenCompiled)
-import           ZkPass.Api.Context
 import           ZkPass.Utils                           (fromAddrHex)
 
 -- | Setup input parameters.

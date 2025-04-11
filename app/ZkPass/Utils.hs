@@ -7,8 +7,7 @@ import           GeniusYield.Types
 import           Prelude
 import           System.Directory     (createDirectoryIfMissing)
 import           System.FilePath      ((</>))
-import           System.IO            (IOMode (AppendMode),
-                                       withFile)
+import           System.IO            (IOMode (AppendMode), withFile)
 import           Text.Parsec          (parse)
 
 import           ZkPass.Api.Context   (SetupParams)

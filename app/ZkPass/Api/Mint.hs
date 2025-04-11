@@ -1,7 +1,7 @@
 module ZkPass.Api.Mint where
 
 import           Cardano.Api                            (AssetName (..),
-                                                        parseAddressAny)
+                                                         parseAddressAny)
 import           Control.Exception                      (throwIO)
 import           Data.Aeson
 import           Data.Coerce                            (coerce)
@@ -17,10 +17,10 @@ import           Text.Parsec                            (parse)
 
 import           ZkFold.Cardano.OffChain.Utils          (byteStringAsHex)
 import qualified ZkFold.Cardano.OnChain.BLS12_381.F     as F
+import           ZkPass.Api.Context
 import           ZkPass.Cardano.Example.IdentityCircuit (zkPassResultVerificationBytes)
 import           ZkPass.Cardano.Example.ZkPassResult    (zkPassResult)
 import           ZkPass.Cardano.UPLC.ZkPassToken        (zkPassTokenCompiled)
-import           ZkPass.Api.Context
 import           ZkPass.Utils                           (asTuple)
 
 

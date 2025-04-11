@@ -13,9 +13,9 @@ import qualified ZkFold.Cardano.OnChain.BLS12_381.F     as F
 import           ZkFold.Cardano.OnChain.Plonkup.Data    (ProofBytes (..))
 import           ZkPass.Cardano.Example.IdentityCircuit (identityCircuitVerificationBytes)
 
+import           ZkPass.Api.Context
 import           ZkPass.Cardano.UPLC.ZkPassToken        (forwardingMintCompiled,
                                                          zkPassTokenCompiled)
-import           ZkPass.Api.Context
 
 
 -- | Burning input parameters.

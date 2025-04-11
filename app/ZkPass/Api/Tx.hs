@@ -1,6 +1,6 @@
 module ZkPass.Api.Tx where
 
-import           Control.Monad     (void)
+import           Control.Monad      (void)
 import           Data.Aeson
 import           GeniusYield.Types
 import           GHC.Generics

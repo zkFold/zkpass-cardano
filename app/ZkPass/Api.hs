@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE TypeOperators #-}
 
 module ZkPass.Api where
 
@@ -9,13 +9,18 @@ import           Network.Wai.Middleware.Cors
 import           Prelude
 import           Servant
 
-import           ZkPass.Api.Context          (Ctx (..), OwnAddresses, OwnAddress, SetupParams, UnsignedTxResponse,
-                                              handleOwnAddr)
 import           ZkPass.Api.Burn             (BurnInput, handleBurn)
-import           ZkPass.Api.Mint             (MintInput, ZkPassResponse, handleMint)
-import           ZkPass.Api.Setup            (SetupInput, SetupResponse, handleSetup)
+import           ZkPass.Api.Context          (Ctx (..), OwnAddress,
+                                              OwnAddresses, SetupParams,
+                                              UnsignedTxResponse, handleOwnAddr)
+import           ZkPass.Api.Mint             (MintInput, ZkPassResponse,
+                                              handleMint)
+import           ZkPass.Api.Setup            (SetupInput, SetupResponse,
+                                              handleSetup)
 import           ZkPass.Api.Transfer         (TransferInput, handleTransfer)
-import           ZkPass.Api.Tx               (AddWitAndSubmitParams, SubmitTxResponse, handleAddWitAndSubmitTx)
+import           ZkPass.Api.Tx               (AddWitAndSubmitParams,
+                                              SubmitTxResponse,
+                                              handleAddWitAndSubmitTx)
 
 
 -- | Type for our Servant API.

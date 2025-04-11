@@ -10,8 +10,8 @@ import           GeniusYield.Types
 import           GHC.Generics
 import           Prelude
 
-import           ZkPass.Cardano.UPLC.ZkPassToken (forwardingMintCompiled)
 import           ZkPass.Api.Context
+import           ZkPass.Cardano.UPLC.ZkPassToken (forwardingMintCompiled)
 
 
 -- | Transfer input parameters.

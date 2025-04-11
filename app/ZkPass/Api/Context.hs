@@ -11,7 +11,7 @@ import           ZkFold.Base.Algebra.EllipticCurve.BLS12_381 (BLS12_381_G1, Fr)
 import           ZkFold.Base.Protocol.Plonkup.Prover.Secret  (PlonkupProverSecret)
 
 
-------------------------- :Context & Setup: -------------------------                                                                                                                      
+------------------------- :Context & Setup: -------------------------
 
 -- | Configuration context.
 data Ctx = Ctx
