@@ -8,9 +8,6 @@ maintainer:         info@zkfold.io
 license:            GPL-2.0-or-later
 build-type:         Simple
 
-common warnings
-    ghc-options: -Wall
-
 common lang
   default-language: Haskell2010
   default-extensions:
@@ -90,9 +87,8 @@ library
     zkfold-cardano                 ,
 
 executable zkPassToken-init-transaction
-  import:           warnings
---  import:           lang
---  import:           lang-extra
+  import:           lang
+  import:           lang-extra
   default-language: Haskell2010
   ghc-options:      -rtsopts
   main-is:          Main.hs
@@ -133,6 +129,15 @@ executable zkpass-server
     ghc-options:      -rtsopts
     main-is:          Main.hs
     hs-source-dirs:   app
+    other-modules:
+      ZkPass.Api
+      ZkPass.Api.Burn
+      ZkPass.Api.Context
+      ZkPass.Api.Mint
+      ZkPass.Api.Setup
+      ZkPass.Api.Transfer
+      ZkPass.Api.Tx
+      ZkPass.Utils
     build-depends:
       aeson                              ,
       atlas-cardano                      ,
