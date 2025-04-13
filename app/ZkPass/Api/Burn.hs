@@ -50,7 +50,7 @@ handleBurn Ctx{..} SetupParams{..} BurnInput{..} = do
       let utxosAtFMList = utxosToList $ filterUTxOs (\u -> utxoOutDatum u == inlineDatum) utxosAtFM
 
       case utxosAtFMList of
-        [utxoAtFM] -> do
+        utxoAtFM : _ -> do
           let (setup, _, _)        = identityCircuitVerificationBytes spX spPS
               zkPassTokenValidator = validatorFromPlutus @PlutusV3 $ zkPassTokenCompiled setup
 
