@@ -1,6 +1,7 @@
 ## 0.1.1
 
 * Handles the edge case when more than one reward is posted for the same policyID and TaskID.
+* Updated README.
 
 ## 0.1.0
 

@@ -4,6 +4,10 @@
 
 This repository contains the zkPass onchain code, as well as the server side of the zkPass prototype DApp.
 
+## Requirements
+
+Compilation was tested with GHC 9.6.6 and Cabal 3.10.2.1.  Other library requirements are described in [this](https://github.com/input-output-hk/cardano-node-wiki/blob/602fe3a56a13a773cd6c0e00420ee3e5c56f2857/docs/getting-started/install.md) guide.  Additionally, `libpq-dev` or `postgresql` need to be installed as otherwise an error suggesting missing pg_config can occur.
+
 ## zkPass server
 
 To run the zkPass server, execute:
