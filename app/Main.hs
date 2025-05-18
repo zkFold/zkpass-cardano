@@ -28,7 +28,8 @@ main = do
   coreCfgPath <- parseArgs
   coreCfg     <- coreConfigIO coreCfgPath
 
-  x  <- generate arbitrary
+  -- x  <- generate arbitrary
+  let x  = 35312767206560791369550118312524979198971884430305671696030775049220092579175
   ps <- generate arbitrary
   let setupParams = SetupParams x ps
 

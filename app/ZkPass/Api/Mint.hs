@@ -4,6 +4,7 @@ import           Cardano.Api                            (AssetName (..),
                                                          parseAddressAny)
 import           Control.Exception                      (throwIO)
 import           Data.Aeson
+import qualified Data.ByteString.Char8                  as BS8
 import           Data.Coerce                            (coerce)
 import qualified Data.Map.Strict                        as Map
 import           Data.String                            (fromString)
@@ -11,12 +12,13 @@ import           GeniusYield.GYConfig                   (GYCoreConfig (..))
 import           GeniusYield.TxBuilder
 import           GeniusYield.Types
 import           GHC.Generics
-import           PlutusLedgerApi.V3                     (fromBuiltin)
+import           PlutusLedgerApi.V3                     (fromBuiltin, toBuiltin)
 import           Prelude
 import           Text.Parsec                            (parse)
 
 import           ZkFold.Cardano.OffChain.Utils          (byteStringAsHex)
 import qualified ZkFold.Cardano.OnChain.BLS12_381.F     as F
+import           ZkFold.Cardano.OnChain.Utils           (dataToBlake)
 import           ZkPass.Api.Context
 import           ZkPass.Cardano.Example.IdentityCircuit (zkPassResultVerificationBytes)
 import           ZkPass.Cardano.Example.ZkPassResult    (zkPassResult)
@@ -30,6 +32,7 @@ data MintInput = MintInput
   , miChangeAddr      :: !GYAddress
   , miBeneficiaryAddr :: !String
   , miScriptsTxOutRef :: !String
+  , miResult          :: !(Maybe String)
   } deriving stock (Show, Generic)
     deriving anyclass FromJSON
 
@@ -49,9 +52,13 @@ handleMint Ctx{..} SetupParams{..} MintInput{..} = do
 
   case parse parseAddressAny "" miBeneficiaryAddr of
     Right benAddr -> do
-      zkpr <- zkPassResult
+      zkpr <- case miResult of
+        Just res -> pure . toBuiltin $ BS8.pack res
+        Nothing  -> zkPassResult
 
-      let (setup, input, proof) = zkPassResultVerificationBytes spX spPS $ F.toInput zkpr
+      let md = maybe Nothing (metadataMsg . fromString) miResult
+
+      let (setup, input, proof) = zkPassResultVerificationBytes spX spPS . F.toInput $ dataToBlake zkpr
           zkPassTokenValidator  = validatorFromPlutus @PlutusV3 $ zkPassTokenCompiled setup
           zkPassPolicyId        = mintingPolicyId zkPassTokenValidator
           zkPassTokenName       = coerce @AssetName @GYTokenName . AssetName . fromBuiltin $ F.fromInput input
@@ -64,6 +71,7 @@ handleMint Ctx{..} SetupParams{..} MintInput{..} = do
           refScript     = GYMintReference @PlutusV3 txOutRefSetup zkPassTokenValidator
           skeleton      = mustHaveOutput (GYTxOut (addressFromApi benAddr) tokens Nothing Nothing)
                        <> mustMint refScript redeemer zkPassTokenName 1
+                       <> mustHaveTxMetadata md
 
       txBody <- runGYTxBuilderMonadIO nid
                                       providers
