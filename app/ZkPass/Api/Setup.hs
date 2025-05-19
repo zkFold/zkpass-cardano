@@ -48,13 +48,13 @@ handleSetup ctx path SetupInput{..} = do
       setupFile = path </> "setup-params.json"
 
   setupFileFlag <- doesFileExist setupFile
-  
+
   if setupFileFlag
     then return $ SetupResponse Nothing
     else do
       x  <- generate arbitrary
       ps <- generate arbitrary
-    
+
       let partialSetupParams = SetupParams x ipFMTag Nothing
       BL.writeFile setupFile $ encode partialSetupParams
 

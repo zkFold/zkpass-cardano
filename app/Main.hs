@@ -1,14 +1,14 @@
 module Main where
 
-import           GeniusYield.GYConfig      (coreConfigIO, withCfgProviders)
+import           GeniusYield.GYConfig     (coreConfigIO, withCfgProviders)
 import           Network.Wai.Handler.Warp
 import           Prelude
-import           System.Directory          (createDirectoryIfMissing)
-import           System.Environment        (getArgs)
-import           System.FilePath           ((</>))
+import           System.Directory         (createDirectoryIfMissing)
+import           System.Environment       (getArgs)
+import           System.FilePath          ((</>))
 
-import           ZkPass.Api                (app)
-import           ZkPass.Api.Context        (Ctx (..))
+import           ZkPass.Api               (app)
+import           ZkPass.Api.Context       (Ctx (..))
 
 
 -- | Getting path for our core configuration.
@@ -24,7 +24,7 @@ main = do
   let path       = "."
       assetsPath = path </> "assets"
   createDirectoryIfMissing True assetsPath
-  
+
   putStrLn "parsing Config ..."
   coreCfgPath <- parseArgs
   coreCfg     <- coreConfigIO coreCfgPath

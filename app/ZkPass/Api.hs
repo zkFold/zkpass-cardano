@@ -10,7 +10,9 @@ import           Prelude
 import           Servant
 
 import           ZkPass.Api.Burn             (BurnInput, handleBurn)
-import           ZkPass.Api.Context          (Ctx (..), OwnAddress, OwnAddresses, UnsignedTxResponse, handleOwnAddr)
+import           ZkPass.Api.Context          (Ctx (..), OwnAddress,
+                                              OwnAddresses, UnsignedTxResponse,
+                                              handleOwnAddr)
 import           ZkPass.Api.Mint             (MintInput, ZkPassResponse,
                                               handleMint)
 import           ZkPass.Api.SaveScriptsRef   (SaveRefInput, SaveRefResponse,

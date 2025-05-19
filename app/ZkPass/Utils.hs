@@ -1,9 +1,9 @@
 module ZkPass.Utils where
 
-import           Cardano.Api          (parseAddressAny)
+import           Cardano.Api       (parseAddressAny)
 import           GeniusYield.Types
 import           Prelude
-import           Text.Parsec          (parse)
+import           Text.Parsec       (parse)
 
 
 -- | GYToken as a tuple of strings.

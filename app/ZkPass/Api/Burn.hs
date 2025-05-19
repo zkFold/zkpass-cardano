@@ -26,9 +26,9 @@ import           ZkPass.Cardano.UPLC.ZkPassToken        (forwardingMintCompiled,
 
 -- | Burning input parameters.
 data BurnInput = BurnInput
-  { biUsedAddrs       :: ![GYAddress]
-  , biChangeAddr      :: !GYAddress
-  , biZkPassToken     :: !String
+  { biUsedAddrs   :: ![GYAddress]
+  , biChangeAddr  :: !GYAddress
+  , biZkPassToken :: !String
   } deriving stock (Show, Generic)
     deriving anyclass FromJSON
 
