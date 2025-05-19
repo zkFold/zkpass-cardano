@@ -47,9 +47,9 @@ handleSetup ctx path SetupInput{..} = do
       providers = ctxProviders ctx
       setupFile = path </> "setup-params.json"
 
-  setupFileFlag <- doesFileExist setupFile
+  setupFileExists <- doesFileExist setupFile
 
-  if setupFileFlag
+  if setupFileExists
     then return $ SetupResponse Nothing
     else do
       x  <- generate arbitrary

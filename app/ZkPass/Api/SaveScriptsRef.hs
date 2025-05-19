@@ -12,17 +12,17 @@ import           System.FilePath      ((</>))
 import           ZkPass.Api.Context
 
 
--- | Setup input parameters.
+-- | Input with scripts' reference TxId.
 data SaveRefInput = SaveRefInput { sriTxId :: !String }
   deriving stock (Show, Generic)
   deriving anyclass FromJSON
 
--- | Setup response
+-- | Boolean response.
 data SaveRefResponse = SaveRefResponse { srSaved :: !Bool }
   deriving stock (Show, Generic)
   deriving anyclass ToJSON
 
--- | Handle to construct setup response.
+-- | Handle to save scripts' reference TxId.
 handleSaveRef :: FilePath -> SaveRefInput -> IO SaveRefResponse
 handleSaveRef path SaveRefInput{..} = do
   let setupFile = path </> "setup-params.json"
