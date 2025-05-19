@@ -5,8 +5,10 @@ import           Cardano.Api                            (AssetName (..),
 import           Control.Exception                      (throwIO)
 import           Data.Aeson
 import qualified Data.ByteString.Char8                  as BS8
+import qualified Data.ByteString.Lazy                   as BL
 import           Data.Coerce                            (coerce)
 import qualified Data.Map.Strict                        as Map
+import           Data.Maybe                             (fromJust)
 import           Data.String                            (fromString)
 import           GeniusYield.GYConfig                   (GYCoreConfig (..))
 import           GeniusYield.TxBuilder
@@ -14,6 +16,9 @@ import           GeniusYield.Types
 import           GHC.Generics
 import           PlutusLedgerApi.V3                     (fromBuiltin, toBuiltin)
 import           Prelude
+import           System.FilePath                        ((</>))
+import           Test.QuickCheck.Arbitrary              (Arbitrary (..))
+import           Test.QuickCheck.Gen                    (generate)
 import           Text.Parsec                            (parse)
 
 import           ZkFold.Cardano.OffChain.Utils          (byteStringAsHex)
@@ -31,7 +36,6 @@ data MintInput = MintInput
   { miUsedAddrs       :: ![GYAddress]
   , miChangeAddr      :: !GYAddress
   , miBeneficiaryAddr :: !String
-  , miScriptsTxOutRef :: !String
   , miResult          :: !(Maybe String)
   } deriving stock (Show, Generic)
     deriving anyclass FromJSON
@@ -45,20 +49,27 @@ data ZkPassResponse = ZkPassResponse
   } deriving stock (Show, Generic)
     deriving anyclass ToJSON
 
-handleMint :: Ctx -> SetupParams -> MintInput -> IO ZkPassResponse
-handleMint Ctx{..} SetupParams{..} MintInput{..} = do
+handleMint :: Ctx -> FilePath -> MintInput -> IO ZkPassResponse
+handleMint Ctx{..} path MintInput{..} = do
   let nid       = cfgNetworkId ctxCoreCfg
       providers = ctxProviders
 
   case parse parseAddressAny "" miBeneficiaryAddr of
     Right benAddr -> do
+      SetupParams x _ mref <- fromJust . decode <$> BL.readFile (path </> "setup-params.json")
+      ps                   <- generate arbitrary
+
+      scriptsRefTxId <- case mref of
+        Just ref -> pure ref
+        Nothing  -> throwIO $ userError "Missing scripts' reference TxId."
+
       zkpr <- case miResult of
         Just res -> pure . toBuiltin $ BS8.pack res
         Nothing  -> zkPassResult
 
       let md = maybe Nothing (metadataMsg . fromString) miResult
 
-      let (setup, input, proof) = zkPassResultVerificationBytes spX spPS . F.toInput $ dataToBlake zkpr
+      let (setup, input, proof) = zkPassResultVerificationBytes x ps . F.toInput $ dataToBlake zkpr
           zkPassTokenValidator  = validatorFromPlutus @PlutusV3 $ zkPassTokenCompiled setup
           zkPassPolicyId        = mintingPolicyId zkPassTokenValidator
           zkPassTokenName       = coerce @AssetName @GYTokenName . AssetName . fromBuiltin $ F.fromInput input
@@ -67,7 +78,7 @@ handleMint Ctx{..} SetupParams{..} MintInput{..} = do
           tokens                = valueMake $ Map.singleton zkPassToken 1
           redeemer              = redeemerFromPlutusData proof
 
-      let txOutRefSetup = txOutRefFromTuple (fromString miScriptsTxOutRef, 0)
+      let txOutRefSetup = txOutRefFromTuple (scriptsRefTxId, 0)
           refScript     = GYMintReference @PlutusV3 txOutRefSetup zkPassTokenValidator
           skeleton      = mustHaveOutput (GYTxOut (addressFromApi benAddr) tokens Nothing Nothing)
                        <> mustMint refScript redeemer zkPassTokenName 1

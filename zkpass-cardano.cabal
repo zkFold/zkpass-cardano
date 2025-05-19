@@ -135,6 +135,7 @@ executable zkpass-server
       ZkPass.Api.Burn
       ZkPass.Api.Context
       ZkPass.Api.Mint
+      ZkPass.Api.SaveScriptsRef
       ZkPass.Api.Setup
       ZkPass.Api.Transfer
       ZkPass.Api.Tx
