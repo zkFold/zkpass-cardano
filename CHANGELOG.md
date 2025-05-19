@@ -9,3 +9,7 @@
 * Keeping CHANGELOG's versions for backend & client in sync
 * Backend's repo: https://github.com/zkFold/zkpass-cardano
 * Client's repo:  https://github.com/zkFold/zkpass-client
+
+## 0.1.1
+
+* 'SetupParams' are now saved on zkpass server.
