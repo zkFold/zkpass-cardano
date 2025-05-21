@@ -7,8 +7,7 @@ import           GeniusYield.Types
 import           GHC.Generics
 import           Prelude
 
-import           ZkFold.Base.Algebra.EllipticCurve.BLS12_381 (BLS12_381_G1, Fr)
-import           ZkFold.Base.Protocol.Plonkup.Prover.Secret  (PlonkupProverSecret)
+import           ZkFold.Base.Algebra.EllipticCurve.BLS12_381 (Fr)
 
 
 ------------------------- :Context & Setup: -------------------------
@@ -21,16 +20,17 @@ data Ctx = Ctx
 
 -- | Setup parameters.
 data SetupParams = SetupParams
-  { spX  :: !Fr
-  , spPS :: !(PlonkupProverSecret BLS12_381_G1)
+  { spX          :: !Fr
+  , spFMTag      :: !Integer
+  , spScriptsRef :: !(Maybe GYTxId)
   } deriving stock (Show, Generic)
     deriving anyclass (ToJSON, FromJSON)
 
 ------------------------- :Unsigned response: -------------------------
 
 data UnsignedTxResponse = UnsignedTxResponse
-  { urspTxBodyHex :: !T.Text              -- ^ Unsigned transaction cbor.
-  , urspTxFee     :: !(Maybe Integer)     -- ^ Tx fees.
+  { urspTxBodyHex :: !T.Text           -- ^ Unsigned transaction cbor.
+  , urspTxFee     :: !(Maybe Integer)  -- ^ Tx fees.
   } deriving stock (Show, Generic)
     deriving anyclass ToJSON
 

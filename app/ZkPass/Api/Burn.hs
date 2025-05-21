@@ -2,6 +2,8 @@ module ZkPass.Api.Burn where
 
 import           Control.Exception                      (throwIO)
 import           Data.Aeson
+import qualified Data.ByteString.Lazy                   as BL
+import           Data.Maybe                             (fromJust)
 import           Data.String                            (fromString)
 import           GeniusYield.GYConfig                   (GYCoreConfig (..))
 import           GeniusYield.TxBuilder
@@ -9,6 +11,10 @@ import           GeniusYield.Types
 import           GHC.Generics
 import           PlutusLedgerApi.V3                     (toBuiltinData)
 import           Prelude
+import           System.FilePath                        ((</>))
+import           Test.QuickCheck.Arbitrary              (Arbitrary (..))
+import           Test.QuickCheck.Gen                    (generate)
+
 import qualified ZkFold.Cardano.OnChain.BLS12_381.F     as F
 import           ZkFold.Cardano.OnChain.Plonkup.Data    (ProofBytes (..))
 import           ZkPass.Cardano.Example.IdentityCircuit (identityCircuitVerificationBytes)
@@ -20,20 +26,25 @@ import           ZkPass.Cardano.UPLC.ZkPassToken        (forwardingMintCompiled,
 
 -- | Burning input parameters.
 data BurnInput = BurnInput
-  { biUsedAddrs       :: ![GYAddress]
-  , biChangeAddr      :: !GYAddress
-  , biTaskId          :: !Integer
-  , biZkPassToken     :: !String
-  , biScriptsTxOutRef :: !String
+  { biUsedAddrs   :: ![GYAddress]
+  , biChangeAddr  :: !GYAddress
+  , biZkPassToken :: !String
   } deriving stock (Show, Generic)
     deriving anyclass FromJSON
 
-handleBurn :: Ctx -> SetupParams -> BurnInput -> IO UnsignedTxResponse
-handleBurn Ctx{..} SetupParams{..} BurnInput{..} = do
+handleBurn :: Ctx -> FilePath -> BurnInput -> IO UnsignedTxResponse
+handleBurn Ctx{..} path BurnInput{..} = do
+  SetupParams x fmTag mref <- fromJust . decode <$> BL.readFile (path </> "setup-params.json")
+  ps                       <- generate arbitrary
+
+  scriptsRefTxId <- case mref of
+    Just ref -> pure ref
+    Nothing  -> throwIO $ userError "Missing scripts' reference TxId."
+
   let nid       = cfgNetworkId ctxCoreCfg
       providers = ctxProviders
 
-  let forwardingMintValidator = validatorFromPlutus @PlutusV3 $ forwardingMintCompiled biTaskId
+  let forwardingMintValidator = validatorFromPlutus @PlutusV3 $ forwardingMintCompiled fmTag
       forwardingMintAddr      = addressFromValidator nid forwardingMintValidator
 
   let zkpassAsset = fromString biZkPassToken :: GYAssetClass
@@ -51,11 +62,11 @@ handleBurn Ctx{..} SetupParams{..} BurnInput{..} = do
 
       case utxosAtFMList of
         utxoAtFM : _ -> do
-          let (setup, _, _)        = identityCircuitVerificationBytes spX spPS
+          let (setup, _, _)        = identityCircuitVerificationBytes x ps
               zkPassTokenValidator = validatorFromPlutus @PlutusV3 $ zkPassTokenCompiled setup
 
-          let setupTxOutRef   = txOutRefFromTuple (fromString biScriptsTxOutRef, 0)
-              forwardTxOutRef = txOutRefFromTuple (fromString biScriptsTxOutRef, 1)
+          let setupTxOutRef   = txOutRefFromTuple (scriptsRefTxId, 0)
+              forwardTxOutRef = txOutRefFromTuple (scriptsRefTxId, 1)
 
           let setupRef   = GYBuildPlutusScriptReference @PlutusV3 setupTxOutRef zkPassTokenValidator
               forwardRef = GYBuildPlutusScriptReference @PlutusV3 forwardTxOutRef forwardingMintValidator

@@ -77,6 +77,7 @@ library
   build-depends:
     aeson                          ,
     base                >=4.9 && <5,
+    bytestring                     ,
     plutus-core             ^>=1.36,
     plutus-ledger-api       ^>=1.36,
     plutus-tx               ^>=1.36,
@@ -134,6 +135,7 @@ executable zkpass-server
       ZkPass.Api.Burn
       ZkPass.Api.Context
       ZkPass.Api.Mint
+      ZkPass.Api.SaveScriptsRef
       ZkPass.Api.Setup
       ZkPass.Api.Transfer
       ZkPass.Api.Tx

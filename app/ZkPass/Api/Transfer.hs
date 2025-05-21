@@ -2,6 +2,8 @@ module ZkPass.Api.Transfer where
 
 import           Control.Exception               (throwIO)
 import           Data.Aeson
+import qualified Data.ByteString.Lazy            as BL
+import           Data.Maybe                      (fromJust)
 import           Data.String                     (fromString)
 import           GeniusYield.GYConfig            (GYCoreConfig (..))
 import           GeniusYield.Transaction.Common  (minimumUTxO)
@@ -9,6 +11,7 @@ import           GeniusYield.TxBuilder
 import           GeniusYield.Types
 import           GHC.Generics
 import           Prelude
+import           System.FilePath                 ((</>))
 
 import           ZkPass.Api.Context
 import           ZkPass.Cardano.UPLC.ZkPassToken (forwardingMintCompiled)
@@ -18,18 +21,19 @@ import           ZkPass.Cardano.UPLC.ZkPassToken (forwardingMintCompiled)
 data TransferInput = TransferInput
   { tiUsedAddrs  :: ![GYAddress]
   , tiChangeAddr :: !GYAddress
-  , tiTaskId     :: !Integer
   , tiPolicyId   :: !String
   , tiReward     :: !Integer
   } deriving stock (Show, Generic)
     deriving anyclass FromJSON
 
-handleTransfer :: Ctx -> TransferInput -> IO UnsignedTxResponse
-handleTransfer Ctx{..} TransferInput{..} = do
+handleTransfer :: Ctx -> FilePath -> TransferInput -> IO UnsignedTxResponse
+handleTransfer Ctx{..} path TransferInput{..} = do
+  SetupParams _ fmTag _ <- fromJust . decode <$> BL.readFile (path </> "setup-params.json")
+
   let nid       = cfgNetworkId ctxCoreCfg
       providers = ctxProviders
 
-  let forwardingMintValidator = validatorFromPlutus @PlutusV3 $ forwardingMintCompiled tiTaskId
+  let forwardingMintValidator = validatorFromPlutus @PlutusV3 $ forwardingMintCompiled fmTag
       forwardingMintAddr      = addressFromValidator nid forwardingMintValidator
 
   let cs          = mintingPolicyIdToCurrencySymbol . fromString $ tiPolicyId
